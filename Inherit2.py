@@ -37,14 +37,13 @@ from termcolor import cprint
 from random import randint
 
 class House:
-    def __init__(self, cash=100, food=50, dirt=0, cat_food=30):
+    def __init__(self, cash=100, food=50, dirt=0, ):
         self.cash = cash
         self.food = food
         self.dirt = dirt
-        self.cat_food = cat_food
 
     def __str__(self):
-        return 'еды: {}, грязи: {}, денег {}, еды для кота {}'.format(self.food, self.dirt, self.cash, self.cat_food)
+        return 'еды: {}, грязи: {}, денег {}'.format(self.food, self.dirt, self.cash)
 
     def increase_dirt(self):
         self.dirt += 5
@@ -73,10 +72,6 @@ class Human:
         self.home = house
         print("{} заехал/а в дом".format(self.name))
 
-    def pet_the_cat(self):
-        self.happiness += 5
-        print("{} гладил кота".format(self.name))
-
     def suffer(self):
         if self.home.dirt >= 30:
             self.happiness -= 10
@@ -90,47 +85,6 @@ class Human:
             print("{} dead of depression ".format(self.name))
             return None
 
-        return True
-
-
-class Cat:
-    def __init__(self, name, fullness, home):
-        self.name = name
-        self.fullness = fullness
-        self.home = home
-
-    def __str__(self):
-        return " Кот {} имеет степень сытости: {}".format(self.name, self.fullness)
-
-    def eat(self, amount=10):
-        self.fullness += amount * 2
-        self.home.cat_food -= amount
-        print("Кот {} поел".format(self.name))
-
-    def sleep(self):
-        self.fullness -= 10
-        print("Кот {} спал".format(self.name))
-
-    def tear_wallpaper(self):
-        self.fullness -= 10
-        print("Кот {} драл обои".format(self.name))
-
-    def act(self):
-        self.live_or_die()
-        dice = randint(1, 4)
-        if self.fullness < 20:
-            self.eat()
-        elif dice == 1:
-            self.sleep()
-        elif dice == 2:
-            self.eat()
-        else:
-            self.tear_wallpaper()
-
-    def live_or_die(self):
-        if self.fullness <= 0:
-            print("Cat {} dead of starving ".format(self.name))
-            return None
         return True
 
 
@@ -153,8 +107,6 @@ class Husband(Human):
             self.work()
         elif dice == 2:
             self.eat(amount=5)
-        elif dice == 3:
-            self.pet_the_cat()
         else:
             self.gaming()
 
@@ -167,6 +119,46 @@ class Husband(Human):
         self.fullness -= 10
         self.happiness += 20
         print('{} весь день играл в доту'.format(self.name))
+
+
+class Child:
+    def __init__(self, name, home=None, fullness=30):
+        self.const_happiness = 100
+        self.fullness = fullness
+        self.name = name
+        self.home = home
+
+    def __str__(self):
+        return '{}, сытость {} и степень счастья {}'.format(self.name, self.const_happiness, self.fullness)
+
+    def eat(self):
+        if self.home.food >= 5:
+            self.fullness += 5
+            self.home.food -= 5
+            print("{} поел".format(self.name))
+        else:
+            self.fullness += self.home.food
+            self.home.food = 0
+            print("{} поел".format(self.name))
+
+    def sleep(self):
+        self.fullness -= 10
+        print("{} спал".format(self.name))
+
+    def live_or_die(self):
+        if self.fullness <= 0:
+            print("{} dead of starving ".format(self.name))
+            return None
+        return True
+
+    def act(self):
+        dice = randint(1, 2)
+        if self.fullness < 20:
+            self.eat()
+        elif dice == 1:
+            self.eat()
+        else:
+            self.sleep()
 
 
 class Wife(Human):
@@ -207,14 +199,9 @@ class Wife(Human):
         else:
             print("Дом и так чист!")
 
-    def buy_kitecat(self):
-        self.home.cat_food += 10
-        self.home.cash -= 10
-        print("{} купила еды коту".format(self.name))
-
     def act(self):
         self.suffer()
-        dice = randint(1, 6)
+        dice = randint(1, 4)
         if self.home.dirt > 20 and self.fullness >= 30 and self.home.food >= 10:
             self.clean_house()
         elif self.home.cash > 600 and self.happiness < 20:
@@ -227,18 +214,12 @@ class Wife(Human):
             self.shopping()
         elif self.home.cash > 550:
             self.buy_fur_coat()
-        elif self.home.cat_food < 10:
-            self.buy_kitecat()
         elif dice == 1:
             self.clean_house()
         elif dice == 2:
             self.eat(amount=30)
         elif dice == 3:
             self.shopping()
-        elif dice == 4:
-            self.pet_the_cat()
-        elif dice == 5:
-            self.buy_kitecat()
         else:
             self.buy_fur_coat()
 
@@ -246,7 +227,7 @@ class Wife(Human):
 sweet_home = House()
 vasya = Husband(name='Вася', happiness=100, fullness=30, home=None)
 masha = Wife(name='Маша', happiness=100, fullness=30, home=None)
-barsik = Cat("Барсик", 30, sweet_home)
+ivan = Child("Иван", fullness=30, home=sweet_home)
 vasya.go_to_house(sweet_home)
 masha.go_to_house(sweet_home)
 
@@ -255,13 +236,13 @@ for day in range(365):
     cprint('=======================================День {} ===================='.format(day), color='red')
     masha.act()
     vasya.act()
-    barsik.act()
+    ivan.act()
     sweet_home.increase_dirt()
     cprint(vasya, color='blue')
     cprint(masha, color='red')
-    cprint(barsik, color='cyan')
+    cprint(ivan, color='cyan')
     cprint(sweet_home, color='cyan')
-    if vasya.live_or_die() is None or masha.live_or_die() is None or barsik.live_or_die() is None:
+    if vasya.live_or_die() is None or masha.live_or_die() is None and ivan.live_or_die() is not None:
         break
 # edit
 # Отцепить ветку develop и в ней начать добавлять котов в модель семьи
@@ -275,7 +256,9 @@ for day in range(365):
 # Кушает кот максимум по 10 единиц еды, степень сытости растет на 2 пункта за 1 пункт еды
 # Если сытость упадет ниже 0, кот умрет
 
-
+# Реализуем класс ребенок. Ребенок умеет: есть, спать
+# Кушает максимум 10 единиц еды
+# степень счастья всегда = 100
 
 
 
