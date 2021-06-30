@@ -71,5 +71,5 @@ for day in range(1, 366):
     print('============={}========'.format(day))
     vasya.act()
     cprint(vasya, color='green')
-    if vasya.act()  is None:
+    if vasya.act() is None:
         break
